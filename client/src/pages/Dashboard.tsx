@@ -10,8 +10,10 @@ import {
     ArrowUpRight,
     Clock,
     CheckCircle2,
-    Loader2
+    Loader2,
+    LogOut
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { supabase, isMockMode } from '../lib/supabase';
 
 const MOCK_DATA = {
@@ -46,6 +48,7 @@ const Dashboard: React.FC = () => {
     const [sesRegion, setSesRegion] = useState('us-east-1');
     const [leads, setLeads] = useState<any[]>([]);
     const [templates, setTemplates] = useState<any[]>([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchDashboardData();
@@ -123,134 +126,154 @@ const Dashboard: React.FC = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-[#f8fafc]">
-                <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
             </div>
         );
     }
 
     const renderOverview = () => (
-        <>
+        <div className="animate-in fade-in duration-500">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                 {stats.map((stat, i) => (
-                    <div key={i} className="card p-6 border border-slate-200">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="p-2 bg-slate-50 rounded-lg">
-                                <stat.icon className="w-5 h-5 text-indigo-600" />
+                    <div key={i} className="card p-8 border-0 shadow-xl shadow-slate-200/50 hover:shadow-indigo-500/10 transform hover:-translate-y-1 transition-all group">
+                        <div className="flex justify-between items-start mb-6">
+                            <div className="p-4 bg-indigo-50 rounded-2xl group-hover:bg-indigo-600 transition-colors">
+                                <stat.icon className="w-6 h-6 text-indigo-600 group-hover:text-white transition-colors" />
                             </div>
                         </div>
-                        <h3 className="text-slate-500 text-sm font-medium">{stat.label}</h3>
-                        <p className="text-2xl font-bold text-slate-900 mt-1">{stat.value}</p>
+                        <h3 className="text-slate-500 text-xs font-black uppercase tracking-widest">{stat.label}</h3>
+                        <p className="text-4xl font-black text-slate-900 mt-2 tracking-tighter leading-none">{stat.value}</p>
                     </div>
                 ))}
             </div>
 
             {/* Chart/Table Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 card">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="font-semibold text-lg text-slate-800">Últimas Campanhas</h2>
-                        <button onClick={() => setActiveTab('campaigns')} className="text-indigo-600 text-sm font-medium hover:underline">Ver todas</button>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 card border-0 shadow-xl shadow-slate-200/50">
+                    <div className="flex justify-between items-center mb-8">
+                        <h2 className="font-black text-2xl text-slate-900 tracking-tight">Últimas Campanhas</h2>
+                        <button onClick={() => setActiveTab('campaigns')} className="text-indigo-600 text-sm font-black uppercase tracking-widest hover:underline px-4 py-2 hover:bg-indigo-50 rounded-xl transition-all">Ver todas</button>
                     </div>
                     <div className="space-y-4">
                         {campaigns.length > 0 ? campaigns.slice(0, 5).map((campaign) => (
-                            <div key={campaign.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors">
+                            <div key={campaign.id} className="flex items-center justify-between p-5 rounded-2xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/10 transition-all group">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center">
-                                        <Send className="w-5 h-5 text-indigo-600" />
+                                    <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:bg-indigo-600 transition-colors">
+                                        <Send className="w-6 h-6 text-indigo-600 group-hover:text-white" />
                                     </div>
                                     <div>
-                                        <h4 className="font-medium text-slate-900">{campaign.name}</h4>
-                                        <p className="text-xs text-slate-500 flex items-center gap-1">
-                                            <Clock className="w-3 h-3" /> {campaign.sent_at ? new Date(campaign.sent_at).toLocaleDateString() : 'Aguardando'} • <CheckCircle2 className="w-3 h-3" /> {campaign.total_recipients || 0} destinatários
-                                        </p>
+                                        <h4 className="font-extrabold text-slate-900 text-lg leading-tight">{campaign.name}</h4>
+                                        <div className="text-xs text-slate-500 font-bold mt-1 flex items-center gap-2 opacity-60">
+                                            <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-indigo-500" /> {campaign.sent_at ? new Date(campaign.sent_at).toLocaleDateString() : 'Aguardando'}</span>
+                                            <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                                            <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-emerald-500" /> {campaign.total_recipients || 0} destinatários</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-sm font-semibold text-slate-900">
+                                    <p className="text-sm font-black text-slate-900 mb-1">
                                         {campaign.total_recipients > 0
                                             ? ((campaign.opened_count / campaign.total_recipients) * 100).toFixed(1)
                                             : '0'}% Abertura
                                     </p>
-                                    <div className="w-24 h-1.5 bg-slate-100 rounded-full mt-1">
+                                    <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner">
                                         <div
-                                            className="h-full bg-indigo-500 rounded-full"
+                                            className="h-full bg-indigo-600 rounded-full shadow-lg shadow-indigo-500/50 transition-all duration-1000"
                                             style={{ width: `${campaign.total_recipients > 0 ? (campaign.opened_count / campaign.total_recipients) * 100 : 0}%` }}
                                         ></div>
                                     </div>
                                 </div>
                             </div>
                         )) : (
-                            <div className="text-center py-8 text-slate-500 text-sm">
+                            <div className="text-center py-12 text-slate-400 font-medium italic">
                                 Nenhuma campanha enviada recentemente.
                             </div>
                         )}
                     </div>
                 </div>
 
-                <div className="card bg-indigo-600 text-white border-0">
-                    <h2 className="font-semibold text-lg mb-4">Configuração SES</h2>
-                    <p className="text-indigo-100 text-sm mb-6 leading-relaxed">
-                        Sua conta está conectada à região <strong>{sesRegion}</strong>.
-                        Mantenha suas credenciais seguras para garantir o disparo.
-                    </p>
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center bg-indigo-700/50 p-3 rounded-lg text-xs">
-                            <span>SES Status</span>
-                            <span className="flex items-center gap-1">
-                                <div className="w-2 h-2 bg-emerald-400 rounded-full"></div> Ativo
-                            </span>
+                <div className="card bg-slate-900 text-white border-0 shadow-2xl shadow-indigo-900/10 overflow-hidden relative">
+                    <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500/10 rounded-full blur-[80px]"></div>
+                    <div className="relative z-10 font-outfit">
+                        <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-600/50">
+                            <Settings className="w-6 h-6" />
                         </div>
-                        <div className="flex justify-between items-center bg-indigo-700/50 p-3 rounded-lg text-xs">
-                            <span>Reputação</span>
-                            <span className="font-bold">99.8%</span>
+                        <h2 className="font-black text-2xl mb-2 tracking-tight">Infraestrutura SES</h2>
+                        <p className="text-slate-400 text-sm mb-8 leading-relaxed font-medium">
+                            Conectado: <strong className="text-white">{sesRegion}</strong>.
+                            Métricas globais de integridade e envio.
+                        </p>
+                        <div className="space-y-4 mb-10">
+                            <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5 group hover:bg-white/10 transition-colors">
+                                <span className="text-slate-400 text-xs font-bold uppercase tracking-widest leading-none">Status</span>
+                                <span className="flex items-center gap-2 text-xs font-black uppercase text-emerald-400">
+                                    <div className="w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.5)] animate-pulse"></div> Ativo
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5 group hover:bg-white/10 transition-colors">
+                                <span className="text-slate-400 text-xs font-bold uppercase tracking-widest leading-none">Reputação</span>
+                                <span className="text-xs font-black text-indigo-400 uppercase">99.8%</span>
+                            </div>
                         </div>
+                        <button onClick={() => setActiveTab('settings')} className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-indigo-600/30 active:scale-[0.98]">
+                            Gerenciar SES
+                        </button>
                     </div>
-                    <button onClick={() => setActiveTab('settings')} className="w-full btn bg-white text-indigo-600 mt-8 py-2.5 font-bold hover:bg-indigo-50">
-                        Acessar Configurações
-                    </button>
                 </div>
             </div>
-        </>
+        </div>
     );
 
     const renderLeads = () => (
-        <div className="card">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="font-semibold text-lg text-slate-800">Seus Leads</h2>
-                <div className="flex gap-2">
-                    <button className="btn btn-secondary text-sm">Importar</button>
-                    <button className="btn btn-primary text-sm flex gap-1"><Plus className="w-4 h-4" /> Novo Lead</button>
+        <div className="card border-0 shadow-xl shadow-slate-200/50 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h2 className="font-black text-3xl text-slate-900 tracking-tight">Público & Leads</h2>
+                    <p className="text-slate-500 font-medium">Gerencie sua base de contatos com inteligência.</p>
+                </div>
+                <div className="flex gap-3">
+                    <button className="btn btn-secondary px-6 font-bold text-xs uppercase tracking-widest transform hover:scale-105 transition-all">Importar</button>
+                    <button className="btn btn-primary px-6 font-bold text-xs uppercase tracking-widest flex gap-2 shadow-indigo-600/30 transform hover:scale-105 transition-all">
+                        <Plus className="w-4 h-4" /> Novo Lead
+                    </button>
                 </div>
             </div>
             <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                    <thead className="border-b border-slate-100 text-slate-500">
+                <table className="w-full text-left">
+                    <thead className="border-b border-slate-50 text-slate-400 font-black text-[10px] uppercase tracking-widest">
                         <tr>
-                            <th className="pb-3 font-medium">Nome</th>
-                            <th className="pb-3 font-medium">Email</th>
-                            <th className="pb-3 font-medium">Status</th>
-                            <th className="pb-3 font-medium text-right">Criado em</th>
+                            <th className="pb-4 font-black">Nome Completo</th>
+                            <th className="pb-4 font-black">Email Corporativo</th>
+                            <th className="pb-4 font-black">Status</th>
+                            <th className="pb-4 font-black text-right">Inscrição</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                         {leads.length > 0 ? leads.map((lead) => (
-                            <tr key={lead.id} className="hover:bg-slate-50/50 transition-colors">
-                                <td className="py-4 font-medium text-slate-900">{lead.name || 'Sem nome'}</td>
-                                <td className="py-4 text-slate-600">{lead.email}</td>
-                                <td className="py-4">
-                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${lead.status === 'active' ? 'bg-emerald-50 text-emerald-600' :
-                                        lead.status === 'bounced' ? 'bg-rose-50 text-rose-600' :
+                            <tr key={lead.id} className="hover:bg-slate-50/50 transition-colors group">
+                                <td className="py-5">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 font-black text-xs group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                            {lead.name?.charAt(0) || 'U'}
+                                        </div>
+                                        <span className="font-extrabold text-slate-800">{lead.name || 'Sem nome'}</span>
+                                    </div>
+                                </td>
+                                <td className="py-5 text-slate-600 font-medium">{lead.email}</td>
+                                <td className="py-5">
+                                    <span className={`px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest ${lead.status === 'active' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+                                        lead.status === 'bounced' ? 'bg-rose-50 text-rose-600 border border-rose-100' :
                                             'bg-slate-100 text-slate-600'
                                         }`}>
                                         {lead.status}
                                     </span>
                                 </td>
-                                <td className="py-4 text-right text-slate-500">{new Date(lead.created_at).toLocaleDateString()}</td>
+                                <td className="py-5 text-right text-slate-500 font-bold text-xs opacity-60">{new Date(lead.created_at).toLocaleDateString()}</td>
                             </tr>
                         )) : (
                             <tr>
-                                <td colSpan={4} className="py-8 text-center text-slate-500">Nenhum lead encontrado.</td>
+                                <td colSpan={4} className="py-12 text-center text-slate-400 font-medium italic">Nenhum lead encontrado na base.</td>
                             </tr>
                         )}
                     </tbody>
@@ -260,35 +283,40 @@ const Dashboard: React.FC = () => {
     );
 
     const renderCampaigns = () => (
-        <div className="card">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="font-semibold text-lg text-slate-800">Campanhas</h2>
-                <button className="btn btn-primary text-sm flex gap-1"><Plus className="w-4 h-4" /> Nova Campanha</button>
+        <div className="card animate-in slide-in-from-bottom-4 duration-500 border-0 shadow-xl shadow-slate-200/50">
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h2 className="font-black text-3xl text-slate-900 tracking-tight">Campanhas</h2>
+                    <p className="text-slate-500 font-medium italic">Acompanhe o disparo em tempo real.</p>
+                </div>
+                <button className="btn btn-primary px-8 py-3 font-black text-xs uppercase tracking-widest flex gap-2 shadow-indigo-600/40">
+                    <Plus className="w-4 h-4" /> Nova Campanha
+                </button>
             </div>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4">
                 {campaigns.length > 0 ? campaigns.map((campaign) => (
-                    <div key={campaign.id} className="p-4 rounded-xl border border-slate-100 hover:border-indigo-200 transition-all flex justify-between items-center">
-                        <div className="flex gap-4 items-center">
-                            <div className="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600">
-                                <Send className="w-6 h-6" />
+                    <div key={campaign.id} className="p-6 rounded-3xl border border-slate-50 hover:border-indigo-100 hover:bg-indigo-50/10 transition-all flex justify-between items-center group">
+                        <div className="flex gap-5 items-center">
+                            <div className="w-14 h-14 bg-indigo-50 rounded-[22px] flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all transform group-hover:-rotate-3">
+                                <Send className="w-7 h-7" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-slate-900">{campaign.name}</h3>
-                                <div className="flex gap-3 text-xs text-slate-500 mt-1">
-                                    <span>Sent: {campaign.total_recipients || 0}</span>
-                                    <span>Opened: {campaign.opened_count || 0}</span>
-                                    <span>Bounced: {campaign.bounced_count || 0}</span>
+                                <h3 className="font-extrabold text-xl text-slate-900 mb-1">{campaign.name}</h3>
+                                <div className="flex gap-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 bg-indigo-400 rounded-full"></div> Sent: {campaign.total_recipients || 0}</span>
+                                    <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div> Opened: {campaign.opened_count || 0}</span>
+                                    <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 bg-rose-400 rounded-full"></div> Bounced: {campaign.bounced_count || 0}</span>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-10">
                             <div className="text-center">
-                                <div className="text-sm font-bold text-slate-900">{campaign.delivered_count || 0}</div>
-                                <div className="text-[10px] uppercase text-slate-400 font-bold">Entregues</div>
+                                <div className="text-lg font-black text-slate-900">{campaign.delivered_count || 0}</div>
+                                <div className="text-[9px] uppercase text-slate-400 font-black tracking-widest">Entregues</div>
                             </div>
-                            <div className="bg-slate-100 h-8 w-[1px]"></div>
-                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${campaign.status === 'completed' ? 'bg-indigo-50 text-indigo-600' :
-                                campaign.status === 'sending' ? 'bg-amber-50 text-amber-600' :
+                            <div className="bg-slate-100 h-10 w-[2px] rounded-full"></div>
+                            <span className={`px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-tighter ${campaign.status === 'completed' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' :
+                                campaign.status === 'sending' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
                                     'bg-slate-100 text-slate-600'
                                 }`}>
                                 {campaign.status}
@@ -296,120 +324,150 @@ const Dashboard: React.FC = () => {
                         </div>
                     </div>
                 )) : (
-                    <div className="text-center py-8 text-slate-500">Nenhuma campanha encontrada.</div>
+                    <div className="text-center py-20 text-slate-400 font-medium animate-pulse">Nenhuma campanha registrada.</div>
                 )}
             </div>
         </div>
     );
 
     const renderTemplates = () => (
-        <div className="card">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="font-semibold text-lg text-slate-800">Seus Templates</h2>
-                <button className="btn btn-primary text-sm flex gap-1"><Plus className="w-4 h-4" /> Criar Template</button>
+        <div className="animate-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center mb-10">
+                <div>
+                    <h2 className="font-black text-3xl text-slate-900 tracking-tight leading-none mb-2">Email Design</h2>
+                    <p className="text-slate-500 font-medium italic">Seus templates otimizados para conversão.</p>
+                </div>
+                <button className="btn btn-primary px-8 h-12 font-black text-xs uppercase tracking-widest flex gap-2">
+                    <Plus className="w-4 h-4" /> Criar Template
+                </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {templates.length > 0 ? templates.map((template) => (
-                    <div key={template.id} className="group relative border border-slate-100 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-indigo-500/10 transition-all">
-                        <div className="h-40 bg-slate-50 flex items-center justify-center border-b border-slate-50 group-hover:bg-indigo-50/50 transition-colors">
-                            <Layout className="w-12 h-12 text-slate-200 group-hover:text-indigo-200 transition-colors" />
+                    <div key={template.id} className="group relative border-0 card p-0 bg-white rounded-[32px] overflow-hidden shadow-xl shadow-slate-200/50 hover:shadow-indigo-500/20 transform hover:-translate-y-2 transition-all">
+                        <div className="h-48 bg-slate-50 flex items-center justify-center group-hover:bg-indigo-600 transition-all duration-500">
+                            <Layout className="w-16 h-16 text-slate-200 group-hover:text-white/30 transition-all duration-500 group-hover:scale-110" />
                         </div>
-                        <div className="p-4">
-                            <h3 className="font-bold text-slate-900">{template.name}</h3>
-                            <p className="text-xs text-slate-500 mt-1 truncate">{template.subject}</p>
-                            <div className="mt-4 flex gap-2">
-                                <button className="flex-1 py-2 rounded-lg bg-slate-50 text-xs font-bold text-slate-600 hover:bg-slate-100">Editar</button>
-                                <button className="px-3 py-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
-                                    <ArrowUpRight className="w-4 h-4" />
+                        <div className="p-8">
+                            <h3 className="font-black text-xl text-slate-900">{template.name}</h3>
+                            <p className="text-sm font-medium text-slate-400 mt-2 truncate italic opacity-80">{template.subject}</p>
+                            <div className="mt-8 flex gap-3">
+                                <button className="flex-1 py-3 rounded-2xl bg-slate-100 text-[10px] font-black text-slate-600 hover:bg-slate-200 uppercase tracking-widest transition-all">Configurar</button>
+                                <button className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 shadow-lg shadow-indigo-600/30 transition-all active:scale-95">
+                                    <ArrowUpRight className="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
                     </div>
                 )) : (
-                    <div className="col-span-full text-center py-8 text-slate-500">Nenhum template encontrado.</div>
+                    <div className="col-span-full card text-center py-20 text-slate-400 font-medium italic opacity-50 border-dashed border-2">
+                        Base de templates vazia. Clique em Criar Template para começar.
+                    </div>
                 )}
             </div>
         </div>
     );
 
     return (
-        <div className="flex min-h-screen bg-[#f8fafc]">
-            {/* Sidebar */}
-            <aside className="w-64 bg-white border-r border-[#e2e8f0] p-6 hidden md:block">
-                <div className="flex items-center gap-2 mb-10 px-2 cursor-pointer" onClick={() => setActiveTab('overview')}>
-                    <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                        <Mail className="text-white w-5 h-5" />
+        <div className="flex min-h-screen bg-[#f8fafc] font-outfit">
+            {/* Sidebar 固定 */}
+            <aside className="w-72 bg-white border-r border-slate-100 p-8 fixed inset-y-0 left-0 z-50">
+                <div className="flex items-center gap-3 mb-14 px-2 cursor-pointer group" onClick={() => setActiveTab('overview')}>
+                    <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-600/40 transform -rotate-2 group-hover:rotate-0 transition-transform">
+                        <Mail className="text-white w-6 h-6" />
                     </div>
-                    <span className="font-bold text-xl tracking-tight text-indigo-900">SES Flow</span>
+                    <span className="font-black text-2xl tracking-tighter text-slate-900">SES Flow</span>
                 </div>
 
-                <nav className="space-y-1">
-                    <NavItem icon={BarChart3} label="Dashboard" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
+                <nav className="space-y-2">
+                    <NavItem icon={BarChart3} label="Visão Geral" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
                     <NavItem icon={Mail} label="Campanhas" active={activeTab === 'campaigns'} onClick={() => setActiveTab('campaigns')} />
-                    <NavItem icon={Users} label="Líderes & Listas" active={activeTab === 'leads'} onClick={() => setActiveTab('leads')} />
+                    <NavItem icon={Users} label="Gestão de Leads" active={activeTab === 'leads'} onClick={() => setActiveTab('leads')} />
                     <NavItem icon={Layout} label="Templates" active={activeTab === 'templates'} onClick={() => setActiveTab('templates')} />
-                    <div className="pt-4 mt-4 border-t border-[#f1f5f9]">
-                        <NavItem icon={Settings} label="Configurações" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+                    <div className="pt-8 mt-8 border-t border-slate-100">
+                        <NavItem icon={Settings} label="Autenticação SES" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+                        <button
+                            onClick={() => navigate('/login')}
+                            className="w-full flex items-center gap-3 px-4 py-4 mt-2 rounded-[22px] font-black text-xs uppercase tracking-widest text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all"
+                        >
+                            <LogOut className="w-5 h-5" />
+                            Sign Out
+                        </button>
                     </div>
                 </nav>
+
+                <div className="absolute bottom-8 left-8 right-8">
+                    <div className="p-5 bg-indigo-50 rounded-[28px] border border-indigo-100 group hover:bg-indigo-600 transition-all cursor-pointer">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center font-black text-indigo-600 text-sm shadow-sm group-hover:bg-indigo-500 group-hover:text-white">HP</div>
+                            <div>
+                                <p className="text-xs font-black text-indigo-900 leading-tight group-hover:text-white">Henrique P.</p>
+                                <p className="text-[10px] font-bold text-indigo-400 group-hover:text-indigo-200">Plano Pro</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-8 overflow-y-auto">
-                <header className="flex justify-between items-center mb-8">
-                    <div className="animate-in slide-in-from-left duration-500">
-                        <h1 className="text-2xl font-bold text-slate-900">
-                            {activeTab === 'overview' ? `Bem-vindo, ${studio?.name || 'Especialista'}!` :
-                                activeTab === 'campaigns' ? 'Campanhas de Marketing' :
-                                    activeTab === 'leads' ? 'Gerenciamento de Leads' :
-                                        activeTab === 'templates' ? 'Templates de Email' :
+            <main className="flex-1 ml-72 p-10 min-h-screen">
+                <header className="flex justify-between items-center mb-12">
+                    <div className="animate-in slide-in-from-left duration-700">
+                        <h1 className="text-5xl font-black text-slate-900 tracking-tighter mb-2">
+                            {activeTab === 'overview' ? `👋 Olá, ${studio?.name || 'User'}!` :
+                                activeTab === 'campaigns' ? 'Marketing Insights' :
+                                    activeTab === 'leads' ? 'Base de Contatos' :
+                                        activeTab === 'templates' ? 'Design Studio' :
                                             'Configurações SES'}
                         </h1>
-                        <p className="text-slate-500">
-                            {activeTab === 'overview' ? 'Aqui está o desempenho das suas campanhas hoje.' : 'Gerencie seu sistema de comunicação com precisão.'}
+                        <p className="text-slate-400 font-bold italic tracking-wide text-sm">
+                            {activeTab === 'overview' ? 'Sincronizado com AWS SES • Tempo real' : 'Infraestrutura SaaS SES Flow v1.0.2'}
                         </p>
                     </div>
                     {activeTab === 'overview' && (
-                        <button className="btn btn-primary gap-2 flex" onClick={() => setActiveTab('campaigns')}>
+                        <button className="btn btn-primary px-8 h-12 font-black text-xs uppercase tracking-widest gap-3 flex shadow-indigo-600/40 transform hover:scale-105 transition-all" onClick={() => setActiveTab('campaigns')}>
                             <Plus className="w-4 h-4" />
-                            Nova Campanha
+                            Lançar Campanha
                         </button>
                     )}
                 </header>
 
-                <div className="animate-in fade-in duration-700">
+                <div>
                     {activeTab === 'overview' && renderOverview()}
                     {activeTab === 'leads' && renderLeads()}
                     {activeTab === 'campaigns' && renderCampaigns()}
                     {activeTab === 'templates' && renderTemplates()}
                     {activeTab === 'settings' && (
-                        <div className="card max-w-2xl">
-                            <h2 className="font-semibold text-lg text-slate-800 mb-6">Configurações da AWS SES</h2>
-                            <p className="text-sm text-slate-500 mb-8 leading-relaxed">
-                                Insira suas credenciais da Amazon SES para que o sistema possa enviar emails em seu nome.
-                                Recomendamos usar um usuário IAM com permissões apenas para SES.
+                        <div className="card max-w-2xl border-0 shadow-2xl shadow-slate-200/50 p-10 rounded-[40px] animate-in slide-in-from-bottom-6 duration-500">
+                            <div className="w-16 h-16 bg-slate-100 rounded-[24px] flex items-center justify-center mb-8">
+                                <Lock className="w-8 h-8 text-slate-400" />
+                            </div>
+                            <h2 className="font-black text-3xl text-slate-900 tracking-tight mb-4 leading-none">Credenciais AWS SES</h2>
+                            <p className="text-sm text-slate-400 mb-10 leading-relaxed font-bold italic">
+                                Insira as chaves de acesso para habilitar o disparo de emails.
                             </p>
                             <form className="space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase">AWS Region</label>
-                                        <input type="text" className="input w-full" defaultValue={sesRegion} />
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Região AWS</label>
+                                        <input type="text" className="input bg-slate-50 border-slate-100" defaultValue={sesRegion} />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase">From Email</label>
-                                        <input type="email" className="input w-full" placeholder="contato@empresa.com" />
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-mail de Origem</label>
+                                        <input type="email" className="input bg-slate-50 border-slate-100" placeholder="contato@empresa.com" />
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase">AWS Access Key ID</label>
-                                    <input type="password" title="AWS Access Key ID" className="input w-full" placeholder="AKI..." />
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Access Key ID</label>
+                                    <input type="password" title="Access Key ID" className="input bg-slate-50 border-slate-100" placeholder="AKI..." />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase">AWS Secret Access Key</label>
-                                    <input type="password" title="AWS Secret Access Key" className="input w-full" placeholder="••••••••••••••••" />
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Secret Access Key</label>
+                                    <input type="password" title="Secret Access Key" className="input bg-slate-50 border-slate-100" placeholder="••••••••••••••••" />
                                 </div>
-                                <div className="pt-4">
-                                    <button type="button" className="btn btn-primary w-full">Salvar Configurações</button>
+                                <div className="pt-8">
+                                    <button type="button" className="w-full h-14 bg-slate-900 hover:bg-indigo-600 text-white rounded-[22px] font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-slate-900/10 active:scale-95">
+                                        Vincular Conta AWS
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -430,13 +488,16 @@ interface NavItemProps {
 const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, onClick }) => (
     <button
         onClick={onClick}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${active
-            ? 'bg-indigo-50 text-indigo-600 font-medium'
-            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+        className={`w-full flex items-center gap-3 px-4 py-4 rounded-[22px] transition-all transform hover:scale-[1.02] active:scale-[0.98] ${active
+            ? 'bg-slate-900 text-white shadow-2xl shadow-slate-900/20 ring-1 ring-white/10'
+            : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
             }`}
     >
-        <Icon className={`w-5 h-5 ${active ? 'text-indigo-600' : 'text-slate-400'}`} />
-        <span className="text-sm">{label}</span>
+        <Icon className={`w-5 h-5 ${active ? 'text-indigo-400' : 'text-slate-400'}`} />
+        <span className={`text-xs uppercase tracking-widest ${active ? 'font-black' : 'font-bold'}`}>{label}</span>
+        {active && (
+            <div className="ml-auto w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.8)]"></div>
+        )}
     </button>
 );
 

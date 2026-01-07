@@ -1,0 +1,10 @@
+{
+    "name": "ses-email-marketing-root",
+    "private": true,
+    "scripts": {
+        "dev": "npm run dev --prefix client",
+        "build": "npm run build --prefix client",
+        "install-all": "npm install && npm install --prefix client",
+        "client": "npm run dev --prefix client"
+    }
+}

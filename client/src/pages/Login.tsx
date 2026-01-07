@@ -59,55 +59,33 @@ const Login: React.FC = () => {
                         <p className="text-slate-500">Selecione seu tipo de acesso para continuar.</p>
                     </div>
 
-                    <div className="space-y-4 mb-10">
+                    <div className="space-y-4 mb-2">
                         <SelectionButton
-                            active={accessType === 'client'}
-                            onClick={() => setAccessType('client')}
+                            active={false}
+                            onClick={() => {
+                                setLoading(true);
+                                setTimeout(() => navigate('/dashboard'), 800);
+                            }}
                             icon={User}
-                            label="Painel do Cliente"
-                            description="Gestão de campanhas e leads"
+                            label="Acesso Cliente"
+                            description="Gerenciar campanhas e leads"
                         />
                         <SelectionButton
-                            active={accessType === 'admin'}
-                            onClick={() => setAccessType('admin')}
+                            active={false}
+                            onClick={() => {
+                                setLoading(true);
+                                setTimeout(() => navigate('/admin'), 800);
+                            }}
                             icon={ShieldCheck}
-                            label="Administrador SaaS"
-                            description="Configurações globais e studios"
+                            label="Acesso Administrador"
+                            description="Gestão global do SaaS"
                         />
                     </div>
 
-                    {accessType && (
-                        <form className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500" onSubmit={handleLogin}>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">E-mail</label>
-                                <input
-                                    type="email"
-                                    placeholder="seu@exemplo.com"
-                                    className="input focus:ring-4 focus:ring-indigo-100"
-                                    required
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Senha</label>
-                                <input
-                                    type="password"
-                                    placeholder="••••••••"
-                                    className="input focus:ring-4 focus:ring-indigo-100"
-                                    required
-                                />
-                            </div>
-                            <button
-                                disabled={loading}
-                                className="w-full btn btn-primary py-4 text-lg gap-2 flex"
-                            >
-                                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
-                                    <>
-                                        Entrar no {accessType === 'admin' ? 'Painel Admin' : 'Dashboard'}
-                                        <ArrowRight className="w-5 h-5" />
-                                    </>
-                                )}
-                            </button>
-                        </form>
+                    {loading && (
+                        <div className="flex justify-center mt-6 animate-in fade-in duration-300">
+                            <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                        </div>
                     )}
                 </div>
             </div>
@@ -125,8 +103,8 @@ const SelectionButton: React.FC<{
     <button
         onClick={onClick}
         className={`w-full flex items-center p-5 rounded-3xl border-2 transition-all group ${active
-                ? 'border-indigo-600 bg-indigo-50/50'
-                : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50'
+            ? 'border-indigo-600 bg-indigo-50/50'
+            : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50'
             }`}
     >
         <div className={`p-3 rounded-2xl mr-4 transition-colors ${active ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600'
